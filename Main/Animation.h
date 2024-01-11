@@ -1,0 +1,20 @@
+#ifndef ANIMATION_H
+#define ANIMATION_H
+
+#include "LedCoordinate.h"
+#include "Repeat.h"
+
+class Animation {
+protected:
+    LedCoordinate ledCoordinate;
+    Repeat repeat;
+    short x, y, z;
+
+public:
+    Animation();
+    Animation(short x, short y, short z);
+
+    void execute();
+};
+
+#endif //ANIMATION_H
