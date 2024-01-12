@@ -10,6 +10,12 @@ protected:
     Repeat repeat;
     short x, y, z;
 
+    /* FUNCTIONS */
+    void maze(short iterations);
+    void blink(short iterations);
+    void worm(short iterations);
+    void wormBlink(short iterations);
+
 public:
     Animation();
     Animation(short x, short y, short z);

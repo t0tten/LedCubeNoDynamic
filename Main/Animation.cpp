@@ -14,98 +14,111 @@ Animation::Animation(short x, short y, short z)
     this->x         = x;
     this->y         = y;
     this->z         = z;
+    randomSeed(analogRead(0));
 }
 
 void Animation::execute()
 {
-    /* WORM - BLINK */
-    for (short n = 0; n < 4; n++)
+    this->worm(4);
+    this->maze(1);
+    this->wormBlink(4);
+    this->blink(4);
+}
+
+/* ANIMATIONS */
+void Animation::maze(short iterations)
+{
+    /* MAZE */
+    short size = this->x * this->y * this->z;
+    bool* lights = new bool[size];
+    for (short iteration = 0; iteration < iterations; iteration++)
     {
+        for (short i = 0; i < size; i++) lights[size] = true;
+        short startX = random(this->x);
+        short startY = random(this->y);
+        short startZ = random(this->z);
+        for (short i = 0; i < (this->x * this->y * this->z) + 1; i++)
+        {
+            repeat.reset();
+            for (short index = 0; index < (this->x * this->y * this->z); index++)
+            {
+                short x = index % this->x;
+                short y = (index % (this->y * this->y)) / this->x;
+                short z = index / (this->z * this->z);
+                if (lights[index])  repeat.addLedCoordinate(x, y, z, true, false, false);
+                else                repeat.addLedCoordinate(x, y, z, false, false, false);
+            }
+            repeat.execute(1000);
+
+            if (i != (this->x * this->y * this->z))
+            {
+                bool isFree = false;
+                short retries = 100;
+                while (!isFree && retries >= 0)
+                {
+                    short direction = random(3);
+                    short value = (random(2) == 0) ? 1 : -1;
+                    short newX = (direction == 0) ? startX + value : startX;
+                    short newY = (direction == 1) ? startY + value : startY;
+                    short newZ = (direction == 2) ? startZ + value : startZ;
+                    
+                    if ((newX >= 0 && newX < this->x) &&
+                        (newY >= 0 && newY < this->y) &&
+                        (newZ >= 0 && newZ < this->z))
+                    {
+                        short index = (newZ * (this->z * this->z)) + (newY * this->y) + newX;
+                        if (lights[index])
+                        {
+                            isFree = true;
+                            lights[index] = false;
+
+                            startX = newX;
+                            startY = newY;
+                            startZ = newZ;
+                        }
+                    }
+                    retries--;
+                }
+
+                if (!isFree)
+                {
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void Animation::blink(short iterations)
+{
+    /* BLINK */
+    for (short iteration = 0; iteration < iterations; iteration++)
+    {
+        repeat.reset();
         for (short i = 0; i < 8; i++)
         {
-            short color = i % 3;
-            bool red    = (color == 0) ? true : false;
-            bool green  = (color == 1) ? true : false;
-            bool blue   = (color == 2) ? true : false;
-            ledCoordinate.setColor(red, green, blue);
-
             short x = i % 2;
             short y = (i % 4) / 2;
             short z = i / (2 * 2);
-            ledCoordinate.setCoords(x, y, z);
-            ledCoordinate.execute(50);
-
-            short ii = i - 1;
-            if (ii == -1) ii = 7;
-            short xx = ii % 2;
-            short yy = (ii % 4) / 2;
-            short zz = ii / (2 * 2);
-            ledCoordinate.setCoords(xx, yy, zz);
-            ledCoordinate.execute(50);
+            repeat.addLedCoordinate(x, y, z, true, false, false);
         }
-    }
-
-    /* MAZE */
-    bool lights[8] = { true, true, true, true, true, true, true, true };
-    short startX = random(2);
-    short startY = random(2);
-    short startZ = random(2);
-    for (short i = 0; i < 9; i++)
-    {
+        repeat.execute(800);
+        
         repeat.reset();
-        for (short index = 0; index < 8; index++)
+        for (short i = 0; i < 8; i++)
         {
-            short x = index % 2;
-            short y = (index % 4) / 2;
-            short z = index / (2 * 2);
-            if (lights[index])
-            {
-                repeat.addLedCoordinate(x, y, z, true, false, false);
-            }
-            else
-            {
-                repeat.addLedCoordinate(x, y, z, false, false, false);
-            }
+            short x = i % 2;
+            short y = (i % 4) / 2;
+            short z = i / (2 * 2);
+            repeat.addLedCoordinate(x, y, z, false, false, false);
         }
-        repeat.execute(1000);
-
-        if (i != 8)
-        {
-            bool isFree = false;
-            short retries = 100;
-            while (!isFree && retries >= 0)
-            {
-                short direction = random(3);
-                short value = (random(2) == 0) ? 1 : -1;
-
-                short newX = (direction == 0) ? startX + value : startX;
-                short newY = (direction == 1) ? startY + value : startY;
-                short newZ = (direction == 2) ? startZ + value : startZ;
-
-                short index = ((newZ) * newY * this->y) + newX;
-                if (index >= 0 && index < 8)
-                {
-                    if (lights[index])
-                    {
-                        isFree = true;
-                        lights[index] = false;
-
-                        startX = newX;
-                        startY = newY;
-                        startZ = newZ;
-                    }
-                }
-                retries--;
-            }
-            if (!isFree)
-            {
-                break;
-            }
-        }
+        repeat.execute(150);
     }
-
+}
+void Animation::worm(short iterations)
+{
     /* WORM */
-    for (short n = 0; n < 4; n++)
+    for (short iteration = 0; iteration < iterations; iteration++)
     {
         for (short i = 0; i < 8; i++)
         {
@@ -130,29 +143,35 @@ void Animation::execute()
             repeat.execute(50);
         }
     }
+}
 
-    /* BLINK */
-    for (short n = 0; n < 4; n++)
+void Animation::wormBlink(short iterations)
+{
+    /* WORM - BLINK */
+    for (short iteration = 0; iteration < iterations; iteration++)
     {
-        repeat.reset();
         for (short i = 0; i < 8; i++)
         {
+            short color = i % 3;
+            bool red    = (color == 0) ? true : false;
+            bool green  = (color == 1) ? true : false;
+            bool blue   = (color == 2) ? true : false;
+            ledCoordinate.setColor(red, green, blue);
+
             short x = i % 2;
             short y = (i % 4) / 2;
             short z = i / (2 * 2);
-            repeat.addLedCoordinate(x, y, z, true, false, false);
+            ledCoordinate.setCoords(x, y, z);
+            ledCoordinate.execute(50);
+
+            short ii = i - 1;
+            if (ii == -1) ii = 7;
+            short xx = ii % 2;
+            short yy = (ii % 4) / 2;
+            short zz = ii / (2 * 2);
+            ledCoordinate.setCoords(xx, yy, zz);
+            ledCoordinate.execute(50);
         }
-        repeat.execute(800);
-        
-        repeat.reset();
-        for (short i = 0; i < 8; i++)
-        {
-            short x = i % 2;
-            short y = (i % 4) / 2;
-            short z = i / (2 * 2);
-            repeat.addLedCoordinate(x, y, z, false, false, false);
-        }
-        repeat.execute(150);
     }
 }
 
