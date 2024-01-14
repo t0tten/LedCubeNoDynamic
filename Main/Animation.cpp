@@ -66,7 +66,7 @@ void Animation::maze(short iterations)
                         (newY >= 0 && newY < this->y) &&
                         (newZ >= 0 && newZ < this->z))
                     {
-                        short index = (newZ * (this->z * this->z)) + (newY * this->y) + newX;
+                        short index = (newZ * (this->x * this->y)) + (newY * this->x) + newX;
                         if (lights[index])
                         {
                             isFree = true;
