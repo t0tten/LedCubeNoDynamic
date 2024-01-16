@@ -15,6 +15,8 @@ Animation::Animation(short x, short y, short z)
     this->y         = y;
     this->z         = z;
     randomSeed(analogRead(0));
+    this->size = this->x * this->y * this->z;
+    this->lights = new bool[this->size];
 }
 
 void Animation::execute()
@@ -29,48 +31,46 @@ void Animation::execute()
 void Animation::maze(short iterations)
 {
     /* MAZE */
-    short size = this->x * this->y * this->z;
-    bool* lights = new bool[size];
     for (short iteration = 0; iteration < iterations; iteration++)
     {
-        for (short i = 0; i < size; i++) lights[size] = true;
+        for (short i = 0; i < this->size; i++) this->lights[i] = true;
         short startX = random(this->x);
         short startY = random(this->y);
         short startZ = random(this->z);
-        for (short i = 0; i < (this->x * this->y * this->z) + 1; i++)
+        for (short i = 0; i < this->size + 1; i++)
         {
             repeat.reset();
-            for (short index = 0; index < (this->x * this->y * this->z); index++)
+            for (short index = 0; index < this->size; index++)
             {
                 short x = index % this->x;
                 short y = (index % (this->y * this->y)) / this->x;
                 short z = index / (this->z * this->z);
-                if (lights[index])  repeat.addLedCoordinate(x, y, z, true, false, false);
-                else                repeat.addLedCoordinate(x, y, z, false, false, false);
+                if (this->lights[index])    repeat.addLedCoordinate(x, y, z, true, false, false);
+                else                        repeat.addLedCoordinate(x, y, z, false, false, false);
             }
             repeat.execute(1000);
 
-            if (i != (this->x * this->y * this->z))
+            if (i != this->size)
             {
                 bool isFree = false;
                 short retries = 100;
                 while (!isFree && retries >= 0)
                 {
                     short direction = random(3);
-                    short value = (random(2) == 0) ? 1 : -1;
-                    short newX = (direction == 0) ? startX + value : startX;
-                    short newY = (direction == 1) ? startY + value : startY;
-                    short newZ = (direction == 2) ? startZ + value : startZ;
+                    short value     = (random(2) == 0) ? 1 : -1;
+                    short newX      = (direction == 0) ? startX + value : startX;
+                    short newY      = (direction == 1) ? startY + value : startY;
+                    short newZ      = (direction == 2) ? startZ + value : startZ;
                     
                     if ((newX >= 0 && newX < this->x) &&
                         (newY >= 0 && newY < this->y) &&
                         (newZ >= 0 && newZ < this->z))
                     {
                         short index = (newZ * (this->x * this->y)) + (newY * this->x) + newX;
-                        if (lights[index])
+                        if (this->lights[index])
                         {
                             isFree = true;
-                            lights[index] = false;
+                            this->lights[index] = false;
 
                             startX = newX;
                             startY = newY;

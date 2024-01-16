@@ -9,6 +9,9 @@ protected:
     LedCoordinate ledCoordinate;
     Repeat repeat;
     short x, y, z;
+    
+    short size;
+    bool* lights;
 
     /* FUNCTIONS */
     void maze(short iterations);
