@@ -14,9 +14,9 @@ Animation::Animation(short x, short y, short z)
     this->x         = x;
     this->y         = y;
     this->z         = z;
+    this->size      = this->x * this->y * this->z;
+    this->lights    = new bool[this->size];
     randomSeed(analogRead(0));
-    this->size = this->x * this->y * this->z;
-    this->lights = new bool[this->size];
 }
 
 void Animation::execute()
@@ -37,6 +37,7 @@ void Animation::maze(short iterations)
         short startX = random(this->x);
         short startY = random(this->y);
         short startZ = random(this->z);
+        
         for (short i = 0; i < this->size + 1; i++)
         {
             repeat.reset();

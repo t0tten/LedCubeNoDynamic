@@ -18,6 +18,7 @@ bool Repeat::addLedCoordinate(short x, short y, short z, bool red, bool green, b
 {
     if (this->currentAmount < this->size)
     {
+        this->array[this->currentAmount] = LedCoordinate(2, 2, 2);
         this->array[this->currentAmount].setCoords(x, y, z);
         this->array[this->currentAmount].setColor(red, green, blue);
         this->currentAmount++;

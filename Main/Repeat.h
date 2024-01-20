@@ -8,6 +8,7 @@ protected:
     short currentAmount;
     short size;
     LedCoordinate* array;
+    short x, y, z;
 
 public:
     Repeat();

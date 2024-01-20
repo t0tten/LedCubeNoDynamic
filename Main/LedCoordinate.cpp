@@ -33,11 +33,14 @@ LedCoordinate::LedCoordinate(short x, short y, short z)
     this->x         = 0;
     this->y         = 0;
     this->z         = 0;
+    this->red       = false;
+    this->green     = false;
+    this->blue      = false;
 
     for (short shiftRegister = 0; shiftRegister < SHIFT_REGISTERS; shiftRegister++) {
         for (short pinIndex = 0; pinIndex < INSTRUCTIONS; pinIndex++) {
             if (PIN_LAYOUT[shiftRegister][pinIndex] != -1) {
-            pinMode(PIN_LAYOUT[shiftRegister][pinIndex], OUTPUT);
+                pinMode(PIN_LAYOUT[shiftRegister][pinIndex], OUTPUT);
             }
         }
     }
@@ -60,13 +63,11 @@ void LedCoordinate::setColor(bool red, bool green, bool blue)
 void LedCoordinate::execute(short delayTime)
 {
     short index     = (this->y * this->size_y) + this->x;
-    short ledByte   = 1;
-    ledByte         = ledByte << index;
-
-    short levelByte = 1;
-    levelByte       = levelByte << this->z;
+    short ledByte   = 1 << index;
+    short levelByte = 1 << this->z;
     levelByte       = ~levelByte;
 
+    
     this->sendData(ledByte, levelByte);
     delay(delayTime);
 }
@@ -76,10 +77,6 @@ void LedCoordinate::sendData(short ledByte, short levelByte)
     short redData   = this->red     ? ledByte : 0;
     short greenData = this->green   ? ledByte : 0;
     short blueData  = this->blue    ? ledByte : 0;
-
-    if (red)    redData     = ledByte;
-    if (green)  greenData   = ledByte;
-    if (blue)   blueData    = ledByte;
 
     digitalWrite(PIN_LAYOUT[ALL][LATCH], LOW);
     shiftOut(PIN_LAYOUT[RED][DATA], PIN_LAYOUT[RED][CLOCK], MSBFIRST, redData);
